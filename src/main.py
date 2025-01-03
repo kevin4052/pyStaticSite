@@ -3,10 +3,11 @@ from htmlnode import *
 from utils import *
 
 def main():
-    text_node = TextNode("Hello, World!", TextType.TEXT)
-    html_node = text_node_to_html_node(text_node)
-    print(repr(html_node))
-    print(html_node.to_html())
+    node1 = TextNode("`This is text `with a code block word", TextType.TEXT)
+    node2 = TextNode("This is text with a `code block` word `second code block`.", TextType.TEXT)
+    new_nodes = split_nodes_delimiter([node1, node2], "`", TextType.BOLD)
+    print(new_nodes)
+
 
 if __name__ == "__main__":
     main()

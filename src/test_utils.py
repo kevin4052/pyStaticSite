@@ -2,7 +2,7 @@ import unittest
 
 from utils import *
 
-class TestUtils(unittest.TestCase):
+class TestUtils_text_node_to_html_node_text(unittest.TestCase):
     def test_text_node_to_html_node_text(self):
         text_node = TextNode("Hello, World!", TextType.TEXT)
         html_node = text_node_to_html_node(text_node)
@@ -38,3 +38,64 @@ class TestUtils(unittest.TestCase):
         html_node = text_node_to_html_node(text_node)
         self.assertEqual(repr(html_node), "HTMLNode(img, , None, {'src': 'https://www.example.com/image.png', 'alt': 'Hello, World!'})")
         self.assertEqual(html_node.to_html(), '<img src="https://www.example.com/image.png" alt="Hello, World!"></img>')
+
+class TestUtils_split_nodes_delimiter(unittest.TestCase):
+    def test_split_nodes_delimiter_no_nodes(self):
+        new_nodes = split_nodes_delimiter([], "`", TextType.CODE)
+        self.assertEqual(new_nodes, [])
+
+    def test_split_nodes_delimiter_not_text_node(self):
+        node = TextNode("This is text is italic", TextType.ITALIC)
+        new_nodes = split_nodes_delimiter([node], "*", TextType.CODE)
+        self.assertEqual(len(new_nodes), 1)
+        self.assertEqual(new_nodes[0].text, "This is text is italic")
+        self.assertEqual(new_nodes[0].text_type, TextType.ITALIC)
+
+    def test_split_nodes_delimiter_no_delimiter(self):
+        node = TextNode("This is text with a code block word", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
+        self.assertEqual(len(new_nodes), 1)
+        self.assertEqual(new_nodes[0].text, "This is text with a code block word")
+        self.assertEqual(new_nodes[0].text_type, TextType.TEXT)
+
+    def test_split_nodes_delimiter_no_closing_delimiter(self):
+        node = TextNode("This is text with a `code block word", TextType.TEXT)
+        with self.assertRaises(ValueError):
+            split_nodes_delimiter([node], "`", TextType.CODE)
+
+    def test_split_nodes_delimiter_code(self):
+        node = TextNode("This is text with a `code block` word `second code block`.", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
+        self.assertEqual(len(new_nodes), 5)
+        self.assertEqual(new_nodes[0].text, "This is text with a ")
+        self.assertEqual(new_nodes[0].text_type, TextType.TEXT)
+        self.assertEqual(new_nodes[1].text, "code block")
+        self.assertEqual(new_nodes[1].text_type, TextType.CODE)
+        self.assertEqual(new_nodes[2].text, " word ")
+        self.assertEqual(new_nodes[2].text_type, TextType.TEXT)
+        self.assertEqual(new_nodes[3].text, "second code block")
+        self.assertEqual(new_nodes[3].text_type, TextType.CODE)
+        self.assertEqual(new_nodes[4].text, ".")
+        self.assertEqual(new_nodes[4].text_type, TextType.TEXT)
+
+    def test_split_nodes_delimiter_bold(self):
+        node = TextNode("**This is text** with a bold block.", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
+        self.assertEqual(len(new_nodes), 2)
+        self.assertEqual(new_nodes[0].text, "This is text")
+        self.assertEqual(new_nodes[0].text_type, TextType.BOLD)
+        self.assertEqual(new_nodes[1].text, " with a bold block.")
+        self.assertEqual(new_nodes[1].text_type, TextType.TEXT)
+
+    def test_split_nodes_delimiter_italic(self):
+        node = TextNode("*This is text* with an *italic block*.", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "*", TextType.ITALIC)
+        self.assertEqual(len(new_nodes), 4)
+        self.assertEqual(new_nodes[0].text, "This is text")
+        self.assertEqual(new_nodes[0].text_type, TextType.ITALIC)
+        self.assertEqual(new_nodes[1].text, " with an ")
+        self.assertEqual(new_nodes[1].text_type, TextType.TEXT)
+        self.assertEqual(new_nodes[2].text, "italic block")
+        self.assertEqual(new_nodes[2].text_type, TextType.ITALIC)
+        self.assertEqual(new_nodes[3].text, ".")
+        self.assertEqual(new_nodes[3].text_type, TextType.TEXT)

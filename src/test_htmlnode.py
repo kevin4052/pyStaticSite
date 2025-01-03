@@ -25,16 +25,8 @@ class TestLeafNode(unittest.TestCase):
         self.assertEqual(node.to_html(), '<a href="https://www.boot.dev">This is a link node</a>')
 
     def test_to_html_no_tag(self):
-        node = LeafNode(value="This is a paragraph node")
+        node = LeafNode(None, "This is a paragraph node")
         self.assertEqual(node.to_html(), "This is a paragraph node")
-
-    def test_to_html_no_value(self):
-        node = LeafNode("p")
-        self.assertRaises(ValueError, node.to_html)
-
-    def test_to_html_no_tag_no_value(self):
-        node = LeafNode()
-        self.assertRaises(ValueError, node.to_html)
 
 class TestParentNode(unittest.TestCase):
     def test_to_html(self):

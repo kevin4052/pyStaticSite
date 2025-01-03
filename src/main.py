@@ -3,10 +3,10 @@ from htmlnode import *
 from utils import *
 
 def main():
-    node1 = TextNode("`This is text `with a code block word", TextType.TEXT)
-    node2 = TextNode("This is text with a `code block` word `second code block`.", TextType.TEXT)
-    new_nodes = split_nodes_delimiter([node1, node2], "`", TextType.BOLD)
-    print(new_nodes)
+    text = "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and [obi wan](https://i.imgur.com/fJRm4Vk.jpeg)"
+    print("image: ", extract_markdown_images(text))
+    print("link: ", extract_markdown_links(text))
+    # [("rick roll", "https://i.imgur.com/aKaOqIh.gif"), ("obi wan", "https://i.imgur.com/fJRm4Vk.jpeg")]
 
 
 if __name__ == "__main__":

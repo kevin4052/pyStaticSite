@@ -99,3 +99,40 @@ class TestUtils_split_nodes_delimiter(unittest.TestCase):
         self.assertEqual(new_nodes[2].text_type, TextType.ITALIC)
         self.assertEqual(new_nodes[3].text, ".")
         self.assertEqual(new_nodes[3].text_type, TextType.TEXT)
+
+class TestUtils_extract_markdown_images(unittest.TestCase):
+    def test_extract_markdown_images_no_images(self):
+        text = "This is text with no images."
+        images = extract_markdown_images(text)
+        self.assertEqual(images, [])
+
+    def test_extract_markdown_images_only_link(self):
+        text = "This is text with one link [rick roll](https://i.imgur.com/aKaOqIh.gif)."
+        images = extract_markdown_images(text)
+        self.assertEqual(images, [])
+
+    def test_extract_markdown_images_one_image(self):
+        text = "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) image."
+        images = extract_markdown_images(text)
+        self.assertEqual(images, [("rick roll", "https://i.imgur.com/aKaOqIh.gif")])
+    
+    def test_extract_markdown_images_one_image_no_alt(self):
+        text = "This is text with a ![](https://i.imgur.com/aKaOqIh.gif) image."
+        images = extract_markdown_images(text)
+        self.assertEqual(images, [("", "https://i.imgur.com/aKaOqIh.gif")])
+
+class TestUtils_extract_markdown_links(unittest.TestCase):
+    def test_extract_markdown_links_no_links(self):
+        text = "This is text with no links."
+        links = extract_markdown_links(text)
+        self.assertEqual(links, [])
+
+    def test_extract_markdown_links_with_link_and_image(self):
+        text = "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and [obi wan](https://i.imgur.com/fJRm4Vk.jpeg)"
+        links = extract_markdown_links(text)
+        self.assertEqual(links, [("obi wan", "https://i.imgur.com/fJRm4Vk.jpeg")])
+
+    def test_extract_markdown_links_with_link_and_image_no_alt(self):
+        text = "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and [](https://i.imgur.com/fJRm4Vk.jpeg)"
+        links = extract_markdown_links(text)
+        self.assertEqual(links, [("", "https://i.imgur.com/fJRm4Vk.jpeg")])

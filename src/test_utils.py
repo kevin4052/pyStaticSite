@@ -48,15 +48,17 @@ class TestUtils_split_nodes_delimiter(unittest.TestCase):
         node = TextNode("This is text is italic", TextType.ITALIC)
         new_nodes = split_nodes_delimiter([node], "*", TextType.CODE)
         self.assertEqual(len(new_nodes), 1)
-        self.assertEqual(new_nodes[0].text, "This is text is italic")
-        self.assertEqual(new_nodes[0].text_type, TextType.ITALIC)
+        self.assertEqual(new_nodes, [
+            TextNode("This is text is italic", TextType.ITALIC),
+        ])
 
     def test_split_nodes_delimiter_no_delimiter(self):
         node = TextNode("This is text with a code block word", TextType.TEXT)
         new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
         self.assertEqual(len(new_nodes), 1)
-        self.assertEqual(new_nodes[0].text, "This is text with a code block word")
-        self.assertEqual(new_nodes[0].text_type, TextType.TEXT)
+        self.assertEqual(new_nodes, [
+            TextNode("This is text with a code block word", TextType.TEXT),
+        ])
 
     def test_split_nodes_delimiter_no_closing_delimiter(self):
         node = TextNode("This is text with a `code block word", TextType.TEXT)
@@ -67,38 +69,33 @@ class TestUtils_split_nodes_delimiter(unittest.TestCase):
         node = TextNode("This is text with a `code block` word `second code block`.", TextType.TEXT)
         new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
         self.assertEqual(len(new_nodes), 5)
-        self.assertEqual(new_nodes[0].text, "This is text with a ")
-        self.assertEqual(new_nodes[0].text_type, TextType.TEXT)
-        self.assertEqual(new_nodes[1].text, "code block")
-        self.assertEqual(new_nodes[1].text_type, TextType.CODE)
-        self.assertEqual(new_nodes[2].text, " word ")
-        self.assertEqual(new_nodes[2].text_type, TextType.TEXT)
-        self.assertEqual(new_nodes[3].text, "second code block")
-        self.assertEqual(new_nodes[3].text_type, TextType.CODE)
-        self.assertEqual(new_nodes[4].text, ".")
-        self.assertEqual(new_nodes[4].text_type, TextType.TEXT)
+        self.assertEqual(new_nodes, [
+            TextNode("This is text with a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" word ", TextType.TEXT),
+            TextNode("second code block", TextType.CODE),
+            TextNode(".", TextType.TEXT),
+        ])
 
     def test_split_nodes_delimiter_bold(self):
         node = TextNode("**This is text** with a bold block.", TextType.TEXT)
         new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
         self.assertEqual(len(new_nodes), 2)
-        self.assertEqual(new_nodes[0].text, "This is text")
-        self.assertEqual(new_nodes[0].text_type, TextType.BOLD)
-        self.assertEqual(new_nodes[1].text, " with a bold block.")
-        self.assertEqual(new_nodes[1].text_type, TextType.TEXT)
+        self.assertEqual(new_nodes, [
+            TextNode("This is text", TextType.BOLD),
+            TextNode(" with a bold block.", TextType.TEXT),
+        ])
 
     def test_split_nodes_delimiter_italic(self):
         node = TextNode("*This is text* with an *italic block*.", TextType.TEXT)
         new_nodes = split_nodes_delimiter([node], "*", TextType.ITALIC)
         self.assertEqual(len(new_nodes), 4)
-        self.assertEqual(new_nodes[0].text, "This is text")
-        self.assertEqual(new_nodes[0].text_type, TextType.ITALIC)
-        self.assertEqual(new_nodes[1].text, " with an ")
-        self.assertEqual(new_nodes[1].text_type, TextType.TEXT)
-        self.assertEqual(new_nodes[2].text, "italic block")
-        self.assertEqual(new_nodes[2].text_type, TextType.ITALIC)
-        self.assertEqual(new_nodes[3].text, ".")
-        self.assertEqual(new_nodes[3].text_type, TextType.TEXT)
+        self.assertEqual(new_nodes, [
+            TextNode("This is text", TextType.ITALIC),
+            TextNode(" with an ", TextType.TEXT),
+            TextNode("italic block", TextType.ITALIC),
+            TextNode(".", TextType.TEXT),
+        ])
 
 class TestUtils_extract_markdown_images(unittest.TestCase):
     def test_extract_markdown_images_no_images(self):
@@ -142,51 +139,69 @@ class TestUtils_split_nodes_image(unittest.TestCase):
         node = TextNode("This is text with no images.", TextType.TEXT)
         new_nodes = split_nodes_image([node])
         self.assertEqual(len(new_nodes), 1)
-        self.assertEqual(new_nodes[0].text, "This is text with no images.")
-        self.assertEqual(new_nodes[0].text_type, TextType.TEXT)
+        self.assertEqual(new_nodes, [
+            TextNode("This is text with no images.", TextType.TEXT),
+        ])
 
     def test_split_nodes_image_one_image(self):
         node = TextNode("This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) image.", TextType.TEXT)
         new_nodes = split_nodes_image([node])
         self.assertEqual(len(new_nodes), 3)
-        self.assertEqual(new_nodes[0].text, "This is text with a ")
-        self.assertEqual(new_nodes[0].text_type, TextType.TEXT)
-        self.assertEqual(new_nodes[1].text, "rick roll")
-        self.assertEqual(new_nodes[1].text_type, TextType.IMAGE)
-        self.assertEqual(new_nodes[1].url, "https://i.imgur.com/aKaOqIh.gif")
-        self.assertEqual(new_nodes[2].text, " image.")
-        self.assertEqual(new_nodes[2].text_type, TextType.TEXT)
+        self.assertEqual(new_nodes, [
+            TextNode("This is text with a ", TextType.TEXT),
+            TextNode("rick roll", TextType.IMAGE, "https://i.imgur.com/aKaOqIh.gif"),
+            TextNode(" image.", TextType.TEXT),
+        ])
 
     def test_split_nodes_image_one_link(self):
         node = TextNode("This is text with a [obi wan](https://i.imgur.com/fJRm4Vk.jpeg) link.", TextType.TEXT)
         new_nodes = split_nodes_image([node])
         self.assertEqual(len(new_nodes), 1)
-        self.assertEqual(new_nodes[0].text, "This is text with a [obi wan](https://i.imgur.com/fJRm4Vk.jpeg) link.")
-        self.assertEqual(new_nodes[0].text_type, TextType.TEXT)
+        self.assertEqual(new_nodes, [
+            TextNode("This is text with a [obi wan](https://i.imgur.com/fJRm4Vk.jpeg) link.", TextType.TEXT),
+        ])
 
 class TestUtils_split_nodes_link(unittest.TestCase):
     def test_split_nodes_link_no_links(self):
         node = TextNode("This is text with no links.", TextType.TEXT)
         new_nodes = split_nodes_link([node])
         self.assertEqual(len(new_nodes), 1)
-        self.assertEqual(new_nodes[0].text, "This is text with no links.")
-        self.assertEqual(new_nodes[0].text_type, TextType.TEXT)
+        self.assertEqual(new_nodes, [
+            TextNode("This is text with no links.", TextType.TEXT),
+        ])
 
     def test_split_nodes_link_one_link(self):
         node = TextNode("This is text with a [obi wan](https://i.imgur.com/fJRm4Vk.jpeg) link.", TextType.TEXT)
         new_nodes = split_nodes_link([node])
         self.assertEqual(len(new_nodes), 3)
-        self.assertEqual(new_nodes[0].text, "This is text with a ")
-        self.assertEqual(new_nodes[0].text_type, TextType.TEXT)
-        self.assertEqual(new_nodes[1].text, "obi wan")
-        self.assertEqual(new_nodes[1].text_type, TextType.LINK)
-        self.assertEqual(new_nodes[1].url, "https://i.imgur.com/fJRm4Vk.jpeg")
-        self.assertEqual(new_nodes[2].text, " link.")
-        self.assertEqual(new_nodes[2].text_type, TextType.TEXT)
+        self.assertEqual(new_nodes, [
+            TextNode("This is text with a ", TextType.TEXT),
+            TextNode("obi wan", TextType.LINK, "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode(" link.", TextType.TEXT),
+        ])
 
     def test_split_nodes_link_one_image(self):
         node = TextNode("This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) image.", TextType.TEXT)
         new_nodes = split_nodes_link([node])
         self.assertEqual(len(new_nodes), 1)
-        self.assertEqual(new_nodes[0].text, "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) image.")
-        self.assertEqual(new_nodes[0].text_type, TextType.TEXT)
+        self.assertEqual(new_nodes, [
+            TextNode("This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) image.", TextType.TEXT),
+        ])
+
+class TestUtils_text_to_textnodes(unittest.TestCase):
+    def test_text_to_textnodes(self):
+        text = "This is **text** with an *italic* word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        nodes = text_to_textnodes(text)
+        self.assertEqual(len(nodes), 10)
+        self.assertEqual(nodes, [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("text", TextType.BOLD),
+            TextNode(" with an ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" word and a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" and an ", TextType.TEXT),
+            TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+        ])

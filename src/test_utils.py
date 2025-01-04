@@ -136,3 +136,57 @@ class TestUtils_extract_markdown_links(unittest.TestCase):
         text = "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and [](https://i.imgur.com/fJRm4Vk.jpeg)"
         links = extract_markdown_links(text)
         self.assertEqual(links, [("", "https://i.imgur.com/fJRm4Vk.jpeg")])
+
+class TestUtils_split_nodes_image(unittest.TestCase):
+    def test_split_nodes_image_no_images(self):
+        node = TextNode("This is text with no images.", TextType.TEXT)
+        new_nodes = split_nodes_image([node])
+        self.assertEqual(len(new_nodes), 1)
+        self.assertEqual(new_nodes[0].text, "This is text with no images.")
+        self.assertEqual(new_nodes[0].text_type, TextType.TEXT)
+
+    def test_split_nodes_image_one_image(self):
+        node = TextNode("This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) image.", TextType.TEXT)
+        new_nodes = split_nodes_image([node])
+        self.assertEqual(len(new_nodes), 3)
+        self.assertEqual(new_nodes[0].text, "This is text with a ")
+        self.assertEqual(new_nodes[0].text_type, TextType.TEXT)
+        self.assertEqual(new_nodes[1].text, "rick roll")
+        self.assertEqual(new_nodes[1].text_type, TextType.IMAGE)
+        self.assertEqual(new_nodes[1].url, "https://i.imgur.com/aKaOqIh.gif")
+        self.assertEqual(new_nodes[2].text, " image.")
+        self.assertEqual(new_nodes[2].text_type, TextType.TEXT)
+
+    def test_split_nodes_image_one_link(self):
+        node = TextNode("This is text with a [obi wan](https://i.imgur.com/fJRm4Vk.jpeg) link.", TextType.TEXT)
+        new_nodes = split_nodes_image([node])
+        self.assertEqual(len(new_nodes), 1)
+        self.assertEqual(new_nodes[0].text, "This is text with a [obi wan](https://i.imgur.com/fJRm4Vk.jpeg) link.")
+        self.assertEqual(new_nodes[0].text_type, TextType.TEXT)
+
+class TestUtils_split_nodes_link(unittest.TestCase):
+    def test_split_nodes_link_no_links(self):
+        node = TextNode("This is text with no links.", TextType.TEXT)
+        new_nodes = split_nodes_link([node])
+        self.assertEqual(len(new_nodes), 1)
+        self.assertEqual(new_nodes[0].text, "This is text with no links.")
+        self.assertEqual(new_nodes[0].text_type, TextType.TEXT)
+
+    def test_split_nodes_link_one_link(self):
+        node = TextNode("This is text with a [obi wan](https://i.imgur.com/fJRm4Vk.jpeg) link.", TextType.TEXT)
+        new_nodes = split_nodes_link([node])
+        self.assertEqual(len(new_nodes), 3)
+        self.assertEqual(new_nodes[0].text, "This is text with a ")
+        self.assertEqual(new_nodes[0].text_type, TextType.TEXT)
+        self.assertEqual(new_nodes[1].text, "obi wan")
+        self.assertEqual(new_nodes[1].text_type, TextType.LINK)
+        self.assertEqual(new_nodes[1].url, "https://i.imgur.com/fJRm4Vk.jpeg")
+        self.assertEqual(new_nodes[2].text, " link.")
+        self.assertEqual(new_nodes[2].text_type, TextType.TEXT)
+
+    def test_split_nodes_link_one_image(self):
+        node = TextNode("This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) image.", TextType.TEXT)
+        new_nodes = split_nodes_link([node])
+        self.assertEqual(len(new_nodes), 1)
+        self.assertEqual(new_nodes[0].text, "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) image.")
+        self.assertEqual(new_nodes[0].text_type, TextType.TEXT)

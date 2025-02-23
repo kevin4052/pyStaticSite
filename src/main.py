@@ -3,10 +3,17 @@ from htmlnode import *
 from utils import *
 
 def main():
-    text = "This is **text** with an *italic* word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
-    nodes = text_to_textnodes(text)
-    for node in nodes:
-        print(node)
+    text = '''   # This is a heading
+
+This is a paragraph of text. It has some **bold** and *italic* words inside of it.
+
+* This is the first list item in a list block
+* This is a list item
+* This is another list item
+'''
+    blocks = markdown_to_blocks(text)
+    for block in blocks:
+        print(block)
 
 if __name__ == "__main__":
     main()

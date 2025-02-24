@@ -1,6 +1,7 @@
 import re
 from textnode import *
 from htmlnode import *
+from block_type_enum import *
 
 def text_node_to_html_node(text_node):
     match text_node.text_type:
@@ -124,10 +125,47 @@ def text_to_textnodes(text):
     nodes = split_nodes_link(nodes)
     return nodes
 
+"""
+only considering blocks that are separated by an empty line
+
+TODO: include smarting block detection
+"""
 def markdown_to_blocks(text):
     blocks = []
     for block in text.split("\n\n"):
         if block == "":
             continue
-        blocks.append(block.strip())
+        block = block.strip()
+        blocks.append(block)
     return blocks
+
+def block_to_block_type(block):
+    space_split_block = block.split(" ", maxsplit=1)
+    starting_str = space_split_block[0]
+    if len(set(starting_str)) == 1:
+        if starting_str.startswith("#"):
+            return BlockType.HEADING
+        if starting_str.startswith(">"):
+            return BlockType.QUOTE
+        if starting_str.startswith("*") or block.startswith("-"):
+            return BlockType.UNORDERED_LIST
+        
+    if starting_str.startswith("```") and block.endswith("```"):
+        return BlockType.CODE
+    
+    try:
+        space_split_block = block.split(".", maxsplit=1)
+        is_num = space_split_block[0].isdigit()
+        is_dot = block[len(space_split_block[0])] == "."
+        if is_num and is_dot:
+            return BlockType.ORDERED_LIST
+    except:
+        pass
+
+    return BlockType.PARAGRAPH
+
+def validate_block(block, block_type):
+    '''
+    validation each line of block for the given block type
+    '''
+    pass
